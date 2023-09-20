@@ -2672,7 +2672,10 @@ var Gmail = function(localJQuery) {
                 // for specified classes (as defined in api.tracker.dom_observers above) which indicate
                 // related actions which need triggering
                 $(window.document).on("DOMNodeInserted", function(e) {
-                    api.tools.insertion_observer(e.target, api.tracker.dom_observers, api.tracker.dom_observer_map);
+                    // Yield to allow Gmail render to complete
+                    setTimeout(()=>{
+                        api.tools.insertion_observer(e.target, api.tracker.dom_observers, api.tracker.dom_observer_map);
+                    })
                 });
 
                 // recipient_change also needs to listen to removals
@@ -2774,11 +2777,13 @@ var Gmail = function(localJQuery) {
                     }
 
                     // if an element has been found, execute the observer handler (or if none defined, execute the callback)
-                    if(element.length) {
-
+                    if (element.length) {
                         var handler = config.handler ? config.handler : function(match, callback) { callback(match); };
-                        // console.log( "inserted DOM: class match in watchdog",observer,api.tracker.watchdog.dom[observer] );
-                        api.observe.trigger_dom(observer, element, handler);
+                        var idx;
+                        for (idx = 0; idx < element.length; idx++) {
+                            // console.log( "inserted DOM: class match in watchdog",observer,api.tracker.watchdog.dom[observer] );
+                            api.observe.trigger_dom(observer, $(element[idx]), handler);
+                        }
                     }
                 }
             }
